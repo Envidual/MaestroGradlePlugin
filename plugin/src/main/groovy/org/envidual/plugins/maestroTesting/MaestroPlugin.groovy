@@ -11,13 +11,11 @@ class MaestroPlugin implements Plugin<Project> {
     void apply(Project project) {
         //maestro test configuration
         def extension = project.extensions.create('maestroTestOptions', MaestroPluginExtension)
-
         // task to run the maestro tests
         project.tasks.register('runMaestroTests', MaestroTestTask){
             device = project.maestroTestOptions.device
             outputDirectory = project.maestroTestOptions.outputDirectory
             testDirectory = project.maestroTestOptions.testDirectory
-            dependsOn("assemble")
         }
     }
 }
