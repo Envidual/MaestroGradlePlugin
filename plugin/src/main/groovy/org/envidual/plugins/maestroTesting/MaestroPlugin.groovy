@@ -16,6 +16,7 @@ class MaestroPlugin implements Plugin<Project> {
             device = project.maestroTestOptions.device
             outputDirectory = project.maestroTestOptions.outputDirectory
             testDirectory = project.maestroTestOptions.testDirectory
+            dependsOn 'assemble'
         }
     }
 }

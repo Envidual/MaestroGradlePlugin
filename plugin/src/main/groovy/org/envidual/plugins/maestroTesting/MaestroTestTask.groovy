@@ -66,8 +66,8 @@ abstract class MaestroTestTask extends DefaultTask {
                 [adb, '-s', 'emulator-5554', 'install', apkPath])
         //create output directory for the maestro test reports
         def dir = new File(testOutputDir)
-        if (!dir.exists())
-            dir.mkdirs()
+        clearDirectory(dir)
+        dir.mkdirs()
         println "Starting Maestro Tests"
         //run the maestro tests
         maestroResult = runCommands(project,
@@ -114,5 +114,20 @@ abstract class MaestroTestTask extends DefaultTask {
             pb.start()
         }
     }
+
+    /**
+     * remove all files in a directory if it exists
+     * @param directory the directory to delete the files from
+     */
+    static void clearDirectory(File directory) {
+        if (directory.exists() && directory.isDirectory()) {
+            directory.listFiles()?.each { file ->
+                if (file.isFile()) {
+                    file.delete()
+                }
+            }
+        }
+    }
+
 }
 
