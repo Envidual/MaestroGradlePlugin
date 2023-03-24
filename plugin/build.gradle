@@ -27,9 +27,9 @@ dependencies {
 gradlePlugin {
     // Define the plugin
     plugins {
-        greeting {
-            id = 'maestro.plugin.greeting'
-            implementationClass = 'maestro.plugin.MaestroPluginPlugin'
+        maestroTestingPlugin {
+            id = 'org.envidual.maestroTesting'
+            implementationClass = 'org.envidual.plugins.maestroTesting.MaestroPlugin'
         }
     }
 }
