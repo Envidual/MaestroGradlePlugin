@@ -16,8 +16,7 @@ automating maestro UI tests with gradle
     - **outputDirectory**: location of the test reports. Also relative to the sub-project directory.
 
 Example configuration:
-::: tabs
-::: tab Groovy
+Groovy:
 ```Groovy
 maestroTestOptions{  
   device = 'Pixel_6_API_33'  
@@ -25,7 +24,7 @@ maestroTestOptions{
   outputDirectory = 'build/reports/tests/maestroResults'  
 }
 ```
-::: tab Kotlin
+Kotlin:
 ```Kotlin
 maestroTestOptions{  
   device.set("Pixel_6_API_33")  
