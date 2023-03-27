@@ -4,18 +4,19 @@ automating maestro UI tests with gradle
 - [Maestro](https://maestro.mobile.dev/)
   install: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 - [XunitViewer](https://github.com/lukejpreston/xunit-viewer) (for generating html test teports, not required)
-- Project with Java 11 or higher and gradle 7.5 or higher
+- Project with Java 11 or higher and Gradle 7.5 or higher
 - Android Studio
 - at least one virtual device installed locally
 - currently only works for MacOS and Linux
 ## Configuring the plugin
-- add ```id "org.envidual.maestroTesting" version "0.0.1-SNAPSHOT"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
+- add ```id "org.envidual.maestroTesting" version "1.0.0"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
 - configure the maestro tests:
     - **device**: name of the virtual device (as it is displayed in the device manager)
     - **testDirectory**: all maestro flow files in this directory will be executed. The path is relative to the sub-project directory.
     - **outputDirectory**: location of the test reports. Also relative to the sub-project directory.
 
 Example configuration:
+
 Groovy:
 ```Groovy
 maestroTestOptions{  
