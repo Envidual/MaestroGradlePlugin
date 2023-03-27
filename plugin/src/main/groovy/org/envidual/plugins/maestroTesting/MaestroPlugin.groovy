@@ -10,7 +10,7 @@ class MaestroPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         //maestro test configuration
-        def extension = project.extensions.create('maestroTestOptions', MaestroPluginExtension)
+        project.extensions.create('maestroTestOptions', MaestroPluginExtension)
         // task to run the maestro tests
         project.tasks.register('runMaestroTests', MaestroTestTask){
             device = project.maestroTestOptions.device

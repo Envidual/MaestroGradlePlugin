@@ -10,22 +10,19 @@ import org.gradle.api.tasks.TaskAction
 
 abstract class MaestroTestTask extends DefaultTask {
     @Input
-    @Optional
     abstract Property<String> getDevice()
 
     @Input
-    @Optional
     abstract Property<String> getOutputDirectory()
 
     @Input
-    @Optional
     abstract Property<String> getTestDirectory()
 
     MaestroTestTask() {
         // Set default values for the properties
-        device.set("Pixel_6_API_33")
-        outputDirectory.set("build/reports/tests/maestroResults")
-        testDirectory.set("maestro")
+//        device.set("Pixel_6_API_33")
+//        outputDirectory.set("build/reports/tests/maestroResults")
+//        testDirectory.set("maestro")
     }
 
     @TaskAction
@@ -42,7 +39,7 @@ abstract class MaestroTestTask extends DefaultTask {
         // android specific data which is used in the task
         def appID = project.android.defaultConfig.applicationId
         def androidSdkPath = project.android.sdkDirectory.getAbsolutePath()
-        def apkPath = "build" + File.separator + "outputs" + File.separator + "apk" + File.separator + "debug" + File.separator + "app-debug.apk"
+        def apkPath = "build" + File.separator + "outputs" + File.separator + "apk" + File.separator + "debug" + File.separator + "${project.name}-debug.apk"
 
         //executable paths
         def adb = androidSdkPath + File.separator + "platform-tools" + File.separator + "adb"
