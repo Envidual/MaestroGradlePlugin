@@ -33,8 +33,8 @@ abstract class MaestroTestTask extends DefaultTask {
         def testDir = "${project.projectDir}" + File.separator + testDirectory.get() + File.separator
 
         //local variables to store exit values
-        def maestroResult = 0 //variable to store the maestro test outcome
-        def xunitPresent = 0
+        def maestroResult  //variable to store the maestro test outcome
+        def xunitPresent
 
         // android specific data which is used in the task
         def appID = project.android.defaultConfig.applicationId
@@ -56,7 +56,17 @@ abstract class MaestroTestTask extends DefaultTask {
         println "Starting Emulator"
         runCommandsAsync(
                 [emulator, '-avd', device.get(), '-netdelay', 'none', '-netspeed', 'full'])
-        sleep 30000 //give the emulator time to boot TODO check status with adb instead
+        //wait for the emulator to be ready
+        runCommands(project,
+                [adb, 'wait-for-device'])
+        def bootComplete = new ByteArrayOutputStream()
+        println 'Waiting for boot to complete'
+        while (!bootComplete.toString().contains('1')) {
+            bootComplete = new ByteArrayOutputStream()
+            runCommands(project, bootComplete, [adb, 'shell', 'getprop', 'sys.boot_completed'])
+            sleep(1000)
+        }
+        //sleep 30000 //give the emulator time to boot TODO check status with adb instead
         //install the app on the emulator
         println "Installing apk"
         runCommands(project,
@@ -84,14 +94,20 @@ abstract class MaestroTestTask extends DefaultTask {
     //some utility to make the code shorter & clearer
 
     /**
-     * run multiple commands sequentially
-     * @param commands list of commands of the form [<executable> <options>...]
-     * @return exit value of the last command in the list
+     * Execute multiple command-line commands sequentially.
+     *
+     * @param project The Gradle project in which to execute the commands.
+     * @param outputStream An optional OutputStream to redirect the standard output of the commands.
+     * @param commands One or more List<String> objects, each containing a command in the form [<executable> <options>...].
+     * @return The exit value of the last command executed.
      */
-    static int runCommands(Project project, List<String>... commands) {
+    static int runCommands(Project project, ByteArrayOutputStream outputStream = null, List<String>... commands) {
         def exitValue = 0
         for (command in commands) {
             exitValue = project.exec {
+                if(outputStream){
+                    standardOutput = outputStream
+                }
                 ignoreExitValue true
                 workingDir "${project.projectDir}"
                 commandLine command
