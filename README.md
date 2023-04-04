@@ -9,7 +9,7 @@ automating maestro UI tests with gradle
 - at least one virtual device installed
 - currently only works for MacOS and Linux
 ## Configuring the plugin
-- add ```id "org.envidual.maestroTesting" version "1.0.0"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
+- add ```id "org.envidual.maestroTesting" version "1.1.1"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
 - configure the maestro tests:
     - **device**: name of the virtual device to be used for testing (as it is displayed in the device manager)
     - **testDirectory**: all maestro flow files in this directory will be executed. The path is relative to the sub-project directory.
@@ -33,14 +33,34 @@ maestroTestOptions{
   outputDirectory.set("build/reports/tests/maestroResults")  
 }
 ```
-## Run the Maestro tests
+## Running the Maestro tests
 currently, there is only one task available, which will start an emulator and run all maestro flows in the testDirectory:
 ```./gradlew runMaestroTests```
 
 note: this task will also execute assemble in order to build the project
 
+## Using the plugin from github packages
+- add to your `settings.gradle` file:
+  ```Groovy
+  pluginManagement {
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/envidual/maestro-testing")
+            credentials {
+                username=githubuser
+                password=githubkey
+            }
+        }
+    }
+  }
+  ```
+- add to your `gradle.properties` file:
+  ```
+  githubuser=<your_github_username>
+  githubtoken=<your_github_token>
+  ```
+
 ## Using the plugin with a local maven repository
-Currently, the easiest way to use this plugin in any project is to publish it to a local maven repository.
 
 #### Prerequisites:
 - [Maven](https://maven.apache.org/)
