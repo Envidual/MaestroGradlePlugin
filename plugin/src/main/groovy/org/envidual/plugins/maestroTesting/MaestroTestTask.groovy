@@ -46,7 +46,7 @@ abstract class MaestroTestTask extends DefaultTask {
         def xunitPresent
 
         //decide if an emulator should be created
-        def createEmulator = (device.get() == "")
+        def createEmulator = (device.get() != "")
 
         //run the commands
         //start adb server
