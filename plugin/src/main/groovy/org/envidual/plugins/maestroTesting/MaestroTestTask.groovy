@@ -32,10 +32,6 @@ abstract class MaestroTestTask extends DefaultTask {
         def testOutputDir = "${project.projectDir}" + File.separator + outputDirectory.get()
         def testDir = "${project.projectDir}" + File.separator + testDirectory.get() + File.separator
 
-        //local variables to store exit values
-        def maestroResult  //variable to store the maestro test outcome
-        def xunitPresent
-
         // android specific data which is used in the task
         def appID = project.android.defaultConfig.applicationId
         def androidSdkPath = project.android.sdkDirectory.getAbsolutePath()
@@ -45,6 +41,13 @@ abstract class MaestroTestTask extends DefaultTask {
         def adb = androidSdkPath + File.separator + "platform-tools" + File.separator + "adb"
         def emulator = androidSdkPath + File.separator + "emulator" + File.separator + "emulator"
 
+        //local variables to store exit values
+        def maestroResult  //variable to store the maestro test outcome
+        def xunitPresent
+
+        //decide if an emulator should be created
+        def createEmulator = (device.get() == "")
+
         //run the commands
         //start adb server
         runCommands(project,
@@ -52,10 +55,14 @@ abstract class MaestroTestTask extends DefaultTask {
                 [adb, 'kill-server'],
                 [adb, 'start-server'])
         sleep 3000
-        //start the emulator
-        println "Starting Emulator"
-        runCommandsAsync(
-                [emulator, '-avd', device.get(), '-netdelay', 'none', '-netspeed', 'full'])
+        if (createEmulator) {
+            //start the emulator
+            println "Starting Emulator"
+            runCommandsAsync(
+                    [emulator, '-avd', device.get(), '-netdelay', 'none', '-netspeed', 'full'])
+        } else {
+            println "Running with external emulator"
+        }
         //wait for the emulator to be ready
         runCommands(project,
                 [adb, 'wait-for-device'])
@@ -66,7 +73,6 @@ abstract class MaestroTestTask extends DefaultTask {
             runCommands(project, bootComplete, [adb, 'shell', 'getprop', 'sys.boot_completed'])
             sleep(1000)
         }
-        //sleep 30000 //give the emulator time to boot TODO check status with adb instead
         //install the app on the emulator
         println "Installing apk"
         runCommands(project,
@@ -83,9 +89,11 @@ abstract class MaestroTestTask extends DefaultTask {
         xunitPresent = runCommands(project,
                 [adb, 'uninstall', appID],
                 ['xunit-viewer', '-r', testOutputDir + File.separator + "maestro-report.xml", '-o', testOutputDir + File.separator + "index.html"])
-        //shut down the emulator
-        runCommands(project,
-                [adb, '-s', 'emulator-5554', 'emu', 'kill'])
+        if (createEmulator) {
+            //shut down the emulator
+            runCommands(project,
+                    [adb, '-s', 'emulator-5554', 'emu', 'kill'])
+        }
         println "Maestro Tests done!"
         //check if there were failing tests
         assert maestroResult == 0: "Not all Maestro Tests passed." + ((xunitPresent == 0) ? " See file://$testOutputDir/index.html for Maestro test results." : " Couldn't generate html report. Please install xunit-viewer")
@@ -105,7 +113,7 @@ abstract class MaestroTestTask extends DefaultTask {
         def exitValue = 0
         for (command in commands) {
             exitValue = project.exec {
-                if(outputStream){
+                if (outputStream) {
                     standardOutput = outputStream
                 }
                 ignoreExitValue true
