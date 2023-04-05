@@ -48,7 +48,7 @@ note: this task will also execute ```assemble``` in order to build the project
             url = uri("https://maven.pkg.github.com/envidual/maestro-testing")
             credentials {
                 username=githubuser
-                password=githubkey
+                password=githubtoken
             }
         }
     }

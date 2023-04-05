@@ -13,9 +13,10 @@ class MaestroPlugin implements Plugin<Project> {
         project.extensions.create('maestroTestOptions', MaestroPluginExtension)
         // task to run the maestro tests
         project.tasks.register('runMaestroTests', MaestroTestTask){
-            device = project.maestroTestOptions.device
-            outputDirectory = project.maestroTestOptions.outputDirectory
-            testDirectory = project.maestroTestOptions.testDirectory
+            //use options set by the -P command line parameters or maestroTestOptions block in build.gradle
+            device = project.getProperty('device') ?: project.maestroTestOptions.device
+            outputDirectory = project.getProperty('outputDirectory') ?: project.maestroTestOptions.outputDirectory
+            testDirectory = project.getProperty('testDirectory') ?: project.maestroTestOptions.testDirectory
             dependsOn 'assemble'
         }
     }
