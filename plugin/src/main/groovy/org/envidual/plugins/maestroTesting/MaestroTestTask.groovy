@@ -43,7 +43,7 @@ abstract class MaestroTestTask extends DefaultTask {
 
         //local variables to store exit values
         def maestroResult  //variable to store the maestro test outcome
-        def xunitPresent
+        def xunitPresent = 1
 
         //decide if an emulator should be created
         def createEmulator = (device.get() != "")
@@ -86,9 +86,11 @@ abstract class MaestroTestTask extends DefaultTask {
         maestroResult = runCommands(project,
                 ['maestro', 'test', '--format', 'junit', '--output', testOutputDir + File.separator + 'maestro-report.xml', testDir])
         //create html test report
-        xunitPresent = runCommands(project,
-                [adb, 'uninstall', appID],
-                ['xunit-viewer', '-r', testOutputDir + File.separator + "maestro-report.xml", '-o', testOutputDir + File.separator + "index.html"])
+        if(maestroResult != 0) {
+            xunitPresent = runCommands(project,
+                    [adb, 'uninstall', appID],
+                    ['xunit-viewer', '-r', testOutputDir + File.separator + "maestro-report.xml", '-o', testOutputDir + File.separator + "index.html"])
+        }
         if (createEmulator) {
             //shut down the emulator
             runCommands(project,
@@ -96,7 +98,7 @@ abstract class MaestroTestTask extends DefaultTask {
         }
         println "Maestro Tests done!"
         //check if there were failing tests
-        assert maestroResult == 0: "Not all Maestro Tests passed." + ((xunitPresent == 0) ? " See file://$testOutputDir/index.html for Maestro test results." : " Couldn't generate html report. Please install xunit-viewer")
+        assert maestroResult == 0: ("Not all Maestro Tests passed." + ((xunitPresent == 0) ? " See file://$testOutputDir/index.html for Maestro test results." : " Couldn't generate html report. Please install xunit-viewer"))
     }
 
     //some utility to make the code shorter & clearer

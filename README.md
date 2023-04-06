@@ -9,7 +9,7 @@ automating maestro UI tests with gradle
 - at least one virtual device installed
 - currently only works for MacOS and Linux
 ## Configuring the plugin
-- add ```id "org.envidual.maestroTesting" version "1.1.5"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
+- add ```id "org.envidual.maestroTesting" version "1.1.6"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
 - configure the maestro tests:
     - **device**: name of the virtual device to be used for testing (as it is displayed in the device manager). If the device is set to "", the task will not create an emulator itself
     - **testDirectory**: all maestro flow files in this directory will be executed. The path is relative to the sub-project directory.
@@ -47,8 +47,8 @@ note: this task will also execute ```assemble``` in order to build the project
         maven {
             url = uri("https://maven.pkg.github.com/envidual/maestro-testing")
             credentials {
-                username=githubuser
-                password=githubtoken
+                username= System.getenv('GITHUB_USER') ?: githubuser
+                password= System.getenv('GITHUB_TOKEN') ?: githubtoken
             }
         }
     }
@@ -59,6 +59,7 @@ note: this task will also execute ```assemble``` in order to build the project
   githubuser=<your_github_username>
   githubtoken=<your_github_token>
   ```
+  OR set the environment variables GITHUB_USER and GITHUB_TOKEN accordingly
 
 ## Using the plugin with a local maven repository
 
