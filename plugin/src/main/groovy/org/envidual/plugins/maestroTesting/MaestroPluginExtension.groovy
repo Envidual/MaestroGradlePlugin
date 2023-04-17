@@ -7,4 +7,5 @@ interface MaestroPluginExtension {
     Property<String> getDevice()
     Property<String> getOutputDirectory()
     Property<String> getTestDirectory()
+    Property<String> getAndroidSdkPath()
 }

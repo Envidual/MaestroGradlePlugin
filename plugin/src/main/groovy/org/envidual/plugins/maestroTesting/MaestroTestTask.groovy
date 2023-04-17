@@ -18,11 +18,10 @@ abstract class MaestroTestTask extends DefaultTask {
     @Input
     abstract Property<String> getTestDirectory()
 
+    @Input
+    abstract Property<String> getAndroidSdkPath()
+
     MaestroTestTask() {
-        // Set default values for the properties
-//        device.set("Pixel_6_API_33")
-//        outputDirectory.set("build/reports/tests/maestroResults")
-//        testDirectory.set("maestro")
     }
 
     @TaskAction
@@ -34,7 +33,7 @@ abstract class MaestroTestTask extends DefaultTask {
 
         // android specific data which is used in the task
         def appID = project.android.defaultConfig.applicationId
-        def androidSdkPath = project.android.sdkDirectory.getAbsolutePath()
+        def androidSdkPath = androidSdkPath.get()
         def apkPath = "build" + File.separator + "outputs" + File.separator + "apk" + File.separator + "debug" + File.separator + "${project.name}-debug.apk"
 
         //executable paths
@@ -51,32 +50,32 @@ abstract class MaestroTestTask extends DefaultTask {
         //run the commands
         //start adb server
         runCommands(project,
-                [adb, 'kill-server'],
-                [adb, 'kill-server'],
-                [adb, 'start-server'])
+                ["command": [adb, 'kill-server']],
+                ["command": [adb, 'kill-server']],
+                ["command": [adb, 'start-server']])
         sleep 3000
         if (createEmulator) {
             //start the emulator
             println "Starting Emulator"
             runCommandsAsync(
-                    [emulator, '-avd', device.get(), '-netdelay', 'none', '-netspeed', 'full'])
+                    ["command": [emulator, '-avd', device.get(), '-netdelay', 'none', '-netspeed', 'full']])
         } else {
             println "Running with external emulator"
         }
         //wait for the emulator to be ready
         runCommands(project,
-                [adb, 'wait-for-device'])
+                ["command": [adb, 'wait-for-device']])
         def bootComplete = new ByteArrayOutputStream()
         println 'Waiting for boot to complete'
         while (!bootComplete.toString().contains('1')) {
             bootComplete = new ByteArrayOutputStream()
-            runCommands(project, bootComplete, [adb, 'shell', 'getprop', 'sys.boot_completed'])
+            runCommands(project, ["command": [adb, 'shell', 'getprop', 'sys.boot_completed'], "output": bootComplete])
             sleep(1000)
         }
         //install the app on the emulator
         println "Installing apk"
         runCommands(project,
-                [adb, '-s', 'emulator-5554', 'install', apkPath])
+                ["command": [adb, '-s', 'emulator-5554', 'install', apkPath]])
         //create output directory for the maestro test reports
         def dir = new File(testOutputDir)
         clearDirectory(dir)
@@ -84,17 +83,17 @@ abstract class MaestroTestTask extends DefaultTask {
         println "Starting Maestro Tests"
         //run the maestro tests
         maestroResult = runCommands(project,
-                ['maestro', 'test', '--format', 'junit', '--output', testOutputDir + File.separator + 'maestro-report.xml', testDir])
+                ["command": ['maestro', 'test', '--format', 'junit', '--output', testOutputDir + File.separator + 'maestro-report.xml', testDir]])
         //create html test report
-        if(maestroResult != 0) {
+        if (maestroResult != 0) {
             xunitPresent = runCommands(project,
-                    [adb, 'uninstall', appID],
-                    ['xunit-viewer', '-r', testOutputDir + File.separator + "maestro-report.xml", '-o', testOutputDir + File.separator + "index.html"])
+                    ["command": [adb, 'uninstall', appID]],
+                    ["command": ['xunit-viewer', '-r', testOutputDir + File.separator + "maestro-report.xml", '-o', testOutputDir + File.separator + "index.html"]])
         }
         if (createEmulator) {
             //shut down the emulator
             runCommands(project,
-                    [adb, '-s', 'emulator-5554', 'emu', 'kill'])
+                    ["command": [adb, '-s', 'emulator-5554', 'emu', 'kill']])
         }
         println "Maestro Tests done!"
         //check if there were failing tests
@@ -103,24 +102,28 @@ abstract class MaestroTestTask extends DefaultTask {
 
     //some utility to make the code shorter & clearer
 
-    /**
-     * Execute multiple command-line commands sequentially.
-     *
-     * @param project The Gradle project in which to execute the commands.
-     * @param outputStream An optional OutputStream to redirect the standard output of the commands.
-     * @param commands One or more List<String> objects, each containing a command in the form [<executable> <options>...].
-     * @return The exit value of the last command executed.
-     */
-    static int runCommands(Project project, ByteArrayOutputStream outputStream = null, List<String>... commands) {
+/**
+ * Execute multiple command-line commands sequentially.
+ *
+ * @param project The Gradle project in which to execute the commands.
+ * @param workingDirectory The working directory for the executed commands. Default value is the project root directory
+ * @param commands One or more Maps, each containing a command in the form ["command":[<executable> <options>...], "input":<inputStream>, "output":<outputStream>].
+ * input and output are optional. The command should be a list of strings
+ * @return The exit value of the last command executed.
+ */
+    static int runCommands(Project project, String workingDirectory = null, Map<String, Object>... commands) {
         def exitValue = 0
         for (command in commands) {
             exitValue = project.exec {
-                if (outputStream) {
-                    standardOutput = outputStream
+                if (command.containsKey("output")) {
+                    standardOutput = command["output"]
+                }
+                if (command.containsKey("input")) {
+                    standardInput = command["input"]
                 }
                 ignoreExitValue true
-                workingDir "${project.projectDir}"
-                commandLine command
+                workingDir(workingDirectory ?: "${project.projectDir}")
+                commandLine command["command"]
             }.getExitValue()
         }
         return exitValue
@@ -130,9 +133,16 @@ abstract class MaestroTestTask extends DefaultTask {
      * run each command in a new process, don't wait for it to finish
      * @param command of the form [<executable> <options>...]
      */
-    static void runCommandsAsync(List<String>... commands) {
+    static void runCommandsAsync(String workingDirectory = null, Map<String, Object>... commands) {
         for (command in commands) {
-            def pb = new ProcessBuilder(command)
+            def cmdStrings = command["command"].collect { it.toString() } as String[] // cast to an array of strings
+            def pb = new ProcessBuilder(cmdStrings)
+            if (command.containsKey("output")) {
+                pb.redirectOutput(command["output"])
+            }
+            if (command.containsKey("input")) {
+                pb.redirectInput(command["input"])
+            }
             pb.redirectErrorStream(true)
             pb.start()
         }
