@@ -25,7 +25,7 @@ class MaestroPlugin implements Plugin<Project> {
             outputDirectory = project.hasProperty('outputDirectory') ? project.getProperty('outputDirectory') : project.maestroTestOptions.outputDirectory
             testDirectory = project.hasProperty('testDirectory') ? project.getProperty('testDirectory') : project.maestroTestOptions.testDirectory
             androidSdkPath = project.hasProperty('androidSdkPath') ? project.getProperty('androidSdkPath') : (project.maestroTestOptions.androidSdkPath ? project.maestroTestOptions.androidSdkPath : project.android.sdkDirectory.getAbsolutePath())
-            emulatorOptions = project.hasProperty('emulatorOptions') ? project.getProperty('emulatorOptions') : (project.maestroTestOptions.emulatorOptions ? project.maestroTestOptions.emulatorOptions : ['-netdelay', 'none', '-netspeed', 'full'])
+            emulatorOptions = project.hasProperty('emulatorOptions') ? project.getProperty('emulatorOptions').split("\\s+").asList() : (project.maestroTestOptions.emulatorOptions ? project.maestroTestOptions.emulatorOptions : ['-netdelay', 'none', '-netspeed', 'full'])
             dependsOn 'assemble'
         }
         project.tasks.register('installMaestro', InstallMaestroTask)

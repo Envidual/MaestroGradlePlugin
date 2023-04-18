@@ -9,7 +9,7 @@ plugins {
 }
 
 ext {
-    pluginVersion = '1.1.7-SNAPSHOT'
+    pluginVersion = '1.2.0-SNAPSHOT'
 }
 
 group = 'org.envidual'
