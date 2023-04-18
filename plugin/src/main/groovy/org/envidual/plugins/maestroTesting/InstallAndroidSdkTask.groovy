@@ -25,17 +25,17 @@ abstract class InstallAndroidSdkTask extends DefaultTask {
         }
         // install android command line tools
         println "installing command line tools "
-        def sdkPath = "${System.getProperty('user.home')}/Android/Sdk"
+        def sdkPath = "${System.getProperty('user.home')}/Android"
         def dir = new File("${sdkPath}/cmdline-tools")
         if (!dir.exists()) {
             dir.mkdirs()
         }
         Utils.runCommands(project, "${System.getProperty('user.home')}", null,
                 ["command": ["curl", "-o", "commandLineTools.zip", "-sS", commandLineToolsUrl]],
-                ["command": ["unzip", "commandLineTools.zip", "-d", "${sdkPath}/cmdline-tools"]]
+                ["command": ["unzip", "commandLineTools.zip", "-d", "${sdkPath}/Sdk/cmdline-tools"]]
         )
-        def cmdLineToolsDir = new File("${sdkPath}/cmdline-tools/cmdline-tools")
-        cmdLineToolsDir.renameTo("${sdkPath}/cmdline-tools/latest")
+        def cmdLineToolsDir = new File("${sdkPath}/Sdk/cmdline-tools/cmdline-tools")
+        cmdLineToolsDir.renameTo("${sdkPath}/Sdk/cmdline-tools/latest")
         project.maestroTestOptions.androidSdkPath = sdkPath
 
         def sdkmanager = "${sdkPath}/Sdk/cmdline-tools/latest/bin/sdkmanager"
@@ -45,7 +45,7 @@ abstract class InstallAndroidSdkTask extends DefaultTask {
                 'ANDROID_SDK_HOME': "${System.getProperty('user.home')}/Android".toString()
         ]
         def acceptLicenseInput = "y\n" * 10
-        Utils.runCommands(project, sdkPath, androidEnvironment,
+        Utils.runCommands(project, "${sdkPath}/Sdk", androidEnvironment,
                 ["command": ["bash", "-c", "echo \$ANDROID_HOME"]],
                 ["command": [sdkmanager, "--licenses"], "input": new ByteArrayInputStream(acceptLicenseInput.getBytes())],
                 ["command": [sdkmanager, "--install", "build-tools;${buildToolsVersion}", "platform-tools"]])
