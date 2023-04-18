@@ -26,7 +26,7 @@ abstract class InstallAndroidSdkTask extends DefaultTask {
         // install android command line tools
         println "installing command line tools "
         def sdkPath = "${System.getProperty('user.home')}/Android"
-        def dir = new File("${sdkPath}/cmdline-tools")
+        def dir = new File("${sdkPath}/Sdk/cmdline-tools")
         if (!dir.exists()) {
             dir.mkdirs()
         }
