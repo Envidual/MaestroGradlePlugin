@@ -20,8 +20,8 @@ class MaestroPlugin implements Plugin<Project> {
         def process = "which maestro".execute()
         process.waitFor()
         def foundPath = process.text.trim()
-        if (path) {
-            existingMaestroPath = path
+        if (foundPath) {
+            existingMaestroPath = foundPath
             println "Found maestro installed at $existingMaestroPath"
         }
 
@@ -32,8 +32,13 @@ class MaestroPlugin implements Plugin<Project> {
         def _testDirectory = selectParam(project.findProperty('testDirectory'),  project.maestroTestOptions.testDirectory)
         def _emulatorOptions = selectParam(project.findProperty('emulatorOptions'),  project.maestroTestOptions.emulatorOptions, '-netdelay none -netspeed full -no-window -noaudio -no-boot-anim')
         def _sdkPath = selectParam(project.findProperty('sdkPath') ,project.maestroTestOptions.androidSdkPath, System.getenv("ANDROID_SDK_ROOT"), System.getenv("ANDROID_HOME"), project.android?.sdkDirectory?.getAbsolutePath(), "${System.getProperty('user.home')}/Android")
-        def _maestroPath = selectParam(project.findProperty('maestroPath'), project.maestroTestOptions.maestroPath, existingMaestroPath)
-        def _apiLevel = selectParam(project.findProperty('apiLevel')?.toInteger, project.maestroTestOptions.apiLevel, 29)
+        def _maestroPath = selectParam(existingMaestroPath, project.findProperty('maestroPath'), project.maestroTestOptions.maestroPath, "${System.getProperty('user.home')}/.maestro/bin/maestro")
+        def _apiLevel = selectParam(project.findProperty('apiLevel')?.toInteger(), project.maestroTestOptions.apiLevel, 29)
+
+        //TEST
+        println "PROJECT PROPERTY: ${project.findProperty('sdkPath')}"
+        println "EXT PROPERTY: ${project.maestroTestOptions.androidSdkPath}"
+        println "SDK PATH: ${_sdkPath} END SDK PATH"
 
         // register the tasks
         project.tasks.register('runMaestroTests', MaestroTestTask){
@@ -54,7 +59,6 @@ class MaestroPlugin implements Plugin<Project> {
             sdkPath = _sdkPath
             apiLevel = _apiLevel
         }
-
     }
 
     /**

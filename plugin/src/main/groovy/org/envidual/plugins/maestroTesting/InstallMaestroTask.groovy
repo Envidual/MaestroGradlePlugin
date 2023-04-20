@@ -13,6 +13,5 @@ abstract class InstallMaestroTask extends DefaultTask {
         )
         def tmpFile = new File("${System.getProperty('user.home')}/maestroInstallScript.sh")
         tmpFile.delete()
-        project.maestroTestOptions.maestroPath = "${System.getProperty('user.home')}/.maestro/bin"
     }
 }

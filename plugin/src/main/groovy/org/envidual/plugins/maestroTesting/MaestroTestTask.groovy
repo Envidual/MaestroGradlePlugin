@@ -108,10 +108,9 @@ abstract class MaestroTestTask extends DefaultTask {
         Utils.clearDirectory(dir)
         dir.mkdirs()
         println "Starting Maestro Tests"
-        def maestroExecutable = maestroPath.get() ? "${maestroPath.get()}/maestro" : "maestro"
         //run the maestro tests
         maestroResult = Utils.runCommands(project,[:],
-                ["command": [maestroExecutable, 'test', '--format', 'junit', '--output', "${testOutputDir}/maestro-report.xml", testDir]])
+                ["command": [maestroPath.get(), 'test', '--format', 'junit', '--output', "${testOutputDir}/maestro-report.xml", testDir]])
         //create html test report
         if (maestroResult[0] != 0) {
             xunitPresent = Utils.runCommands(project,
