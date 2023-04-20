@@ -5,6 +5,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Optional
 
 abstract class InstallAvdTask extends DefaultTask {
 
@@ -14,7 +15,8 @@ abstract class InstallAvdTask extends DefaultTask {
     @Input
     abstract Property<Integer> getApiLevel()
     
-    @Input 
+    @Input
+    @Optional
     abstract Property<String> getSdkPath()
 
     @TaskAction
@@ -22,8 +24,6 @@ abstract class InstallAvdTask extends DefaultTask {
         def androidSdkPath = sdkPath.get()
         def sdkmanager = "${androidSdkPath}/Sdk/cmdline-tools/latest/bin/sdkmanager"
         def avdmanager = "${androidSdkPath}/Sdk/cmdline-tools/latest/bin/avdmanager"
-        def emulator = "${androidSdkPath}/Sdk/emulator/emulator"
-        def adb = "${androidSdkPath}/Sdk/platform-tools/adb"
         def androidEnvironment = [
                 'ANDROID_HOME': androidSdkPath,
                 'ANDROID_SDK_ROOT': androidSdkPath,

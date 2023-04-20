@@ -12,28 +12,60 @@ class MaestroPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        //maestro test configuration
+        // maestro test configuration
         project.extensions.create('maestroTestOptions', MaestroPluginExtension)
-        // task to run the maestro tests
+
+        // find out if maestro is installed
+        def existingMaestroPath = null
+        def process = "which maestro".execute()
+        process.waitFor()
+        def foundPath = process.text.trim()
+        if (path) {
+            existingMaestroPath = path
+            println "Found maestro installed at $existingMaestroPath"
+        }
+
+        // read configuration from the extension (always select the first non-null parameter from the list)
+        // precedence: command line options > build.gradle file > system > default values
+        def _device = selectParam(project.findProperty('device'),  project.maestroTestOptions.device)
+        def _outputDirectory = selectParam(project.findProperty('outputDirectory'),  project.maestroTestOptions.outputDirectory)
+        def _testDirectory = selectParam(project.findProperty('testDirectory'),  project.maestroTestOptions.testDirectory)
+        def _emulatorOptions = selectParam(project.findProperty('emulatorOptions'),  project.maestroTestOptions.emulatorOptions, '-netdelay none -netspeed full -no-window -noaudio -no-boot-anim')
+        def _sdkPath = selectParam(project.findProperty('sdkPath') ,project.maestroTestOptions.androidSdkPath, System.getenv("ANDROID_SDK_ROOT"), System.getenv("ANDROID_HOME"), project.android?.sdkDirectory?.getAbsolutePath(), "${System.getProperty('user.home')}/Android")
+        def _maestroPath = selectParam(project.findProperty('maestroPath'), project.maestroTestOptions.maestroPath, existingMaestroPath)
+        def _apiLevel = selectParam(project.findProperty('apiLevel')?.toInteger, project.maestroTestOptions.apiLevel, 29)
+
+        // register the tasks
         project.tasks.register('runMaestroTests', MaestroTestTask){
-            //set default value for android sdk path
-            if(!project.maestroTestOptions.androidSdkPath){
-                project.maestroTestOptions = project.android.sdkDirectory.getAbsolutePath()
-            }
-            //use options set by the -P command line parameters or maestroTestOptions block in build.gradle
-            device = project.hasProperty('device') ? project.getProperty('device') : project.maestroTestOptions.device
-            outputDirectory = project.hasProperty('outputDirectory') ? project.getProperty('outputDirectory') : project.maestroTestOptions.outputDirectory
-            testDirectory = project.hasProperty('testDirectory') ? project.getProperty('testDirectory') : project.maestroTestOptions.testDirectory
-            androidSdkPath = project.hasProperty('androidSdkPath') ? project.getProperty('androidSdkPath') : (project.maestroTestOptions.androidSdkPath ? project.maestroTestOptions.androidSdkPath : project.android.sdkDirectory.getAbsolutePath())
-            emulatorOptions = project.hasProperty('emulatorOptions') ? project.getProperty('emulatorOptions').split("\\s+").asList() : (project.maestroTestOptions.emulatorOptions ? project.maestroTestOptions.emulatorOptions : ['-netdelay', 'none', '-netspeed', 'full'])
+            device = _device
+            outputDirectory = _outputDirectory
+            testDirectory = _testDirectory
+            sdkPath = _sdkPath
+            emulatorOptions = _emulatorOptions
+            maestroPath = _maestroPath
             dependsOn 'assemble'
         }
         project.tasks.register('installMaestro', InstallMaestroTask)
-        project.tasks.register('installAndroidSdk', InstallAndroidSdkTask)
-        project.tasks.register('installAvd', InstallAvdTask){
-            device = project.hasProperty('device') ? project.getProperty('device') : project.maestroTestOptions.device
-            androidSdkPath = project.hasProperty('androidSdkPath') ? project.getProperty('androidSdkPath') : (project.maestroTestOptions.androidSdkPath ? project.maestroTestOptions.androidSdkPath : project.android.sdkDirectory.getAbsolutePath())
-            apiLevel = project.hasProperty('apiLevel') ? project.getProperty('apiLevel') : (project.maestroTestOptions.apiLevel ? project.maestroTestOptions.apiLevel : 29)
+        project.tasks.register('installAndroidSdk', InstallAndroidSdkTask){
+            sdkPath = _sdkPath
         }
+        project.tasks.register('installAvd', InstallAvdTask) {
+            device = _device
+            sdkPath = _sdkPath
+            apiLevel = _apiLevel
+        }
+
+    }
+
+    /**
+     * Select the first parameter in the list which isn't null
+     * @param params
+     * @return the first parameter which isn't null
+     */
+    static def selectParam(...params){
+        for (param in params){
+            if(param) return param
+        }
+        throw new IllegalArgumentException("No suitable non-null parameter found")
     }
 }

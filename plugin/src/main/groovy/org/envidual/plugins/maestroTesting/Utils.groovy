@@ -76,6 +76,7 @@ class Utils{
         for (command in commands) {
             println "Executing async command ${command['command']}"
             def pb = new ProcessBuilder(command["command"] as String[])
+            pb.redirectErrorStream(true)
             if (command.containsKey("output")) {
                 pb.redirectOutput(command["output"])
             }

@@ -1,7 +1,7 @@
 package org.envidual.plugins.maestroTesting
 
 import org.gradle.api.provider.Property
-
+import org.gradle.api.tasks.Optional
 
 interface MaestroPluginExtension {
     Property<String> getDevice()
@@ -10,5 +10,5 @@ interface MaestroPluginExtension {
     Property<String> getTestDirectory()
     Property<String> getAndroidSdkPath()
     Property<String> getMaestroPath()
-    Property<ArrayList<String>> getEmulatorOptions()
+    Property<String> getEmulatorOptions()
 }
