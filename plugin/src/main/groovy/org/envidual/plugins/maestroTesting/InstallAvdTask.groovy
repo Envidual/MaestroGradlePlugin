@@ -22,19 +22,21 @@ abstract class InstallAvdTask extends DefaultTask {
     @TaskAction
     void installAvd() {
         def androidSdkPath = sdkPath.get()
-        def sdkmanager = "${androidSdkPath}/Sdk/cmdline-tools/latest/bin/sdkmanager"
-        def avdmanager = "${androidSdkPath}/Sdk/cmdline-tools/latest/bin/avdmanager"
+        def sdkmanager = "${androidSdkPath}/cmdline-tools/latest/bin/sdkmanager"
+        def avdmanager = "${androidSdkPath}/cmdline-tools/latest/bin/avdmanager"
+        def androidHome = new File(androidSdkPath).getParent().toString()
         def androidEnvironment = [
-                'ANDROID_HOME': androidSdkPath,
-                'ANDROID_SDK_ROOT': androidSdkPath,
-                'ANDROID_SDK_HOME': androidSdkPath
+                'ANDROID_HOME': androidHome,
+                'ANDROID_SDK_ROOT': androidHome,
+                'ANDROID_SDK_HOME': androidHome,
         ]
         def acceptLicenseInput = "y\n" * 10
-        Utils.runCommands(project, androidSdkPath, androidEnvironment,
+        Utils.runCommands(project, androidHome, androidEnvironment,
                 ["command": [sdkmanager, "platforms;android-${apiLevel.get()}"], "input": new ByteArrayInputStream("y\n".getBytes())],
                 ["command": [sdkmanager, "system-images;android-${apiLevel.get()};default;x86", "--verbose"], "input": new ByteArrayInputStream(acceptLicenseInput.getBytes())],
-                ["command": [sdkmanager, "emulator"], "input": new ByteArrayInputStream(acceptLicenseInput.getBytes())],
                 ["command": [avdmanager, "create", "avd", "--force", "-n", device.get(), "--abi", "default/x86","--package", "system-images;android-${apiLevel.get()};default;x86"], "input":new ByteArrayInputStream("no\n".getBytes())],
-                ["command": [avdmanager, "list", "avd"]])
+                ["command": [avdmanager, "list", "avd"]]
+        )
+
     }
 }

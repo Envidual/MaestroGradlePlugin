@@ -43,15 +43,16 @@ abstract class MaestroTestTask extends DefaultTask {
         def androidSdkPath = sdkPath.get()
         def apkPath = "build/outputs/apk/debug/${project.name}-debug.apk"
 
+        def androidHome = new File(androidSdkPath).getParent().toString()
         def androidEnvironment = [
-                'ANDROID_HOME': androidSdkPath,
-                'ANDROID_SDK_ROOT': androidSdkPath,
-                'ANDROID_SDK_HOME': androidSdkPath
+                'ANDROID_HOME': androidHome,
+                'ANDROID_SDK_ROOT': androidHome,
+                'ANDROID_SDK_HOME': androidHome,
         ]
 
         //executable paths
-        def adb = "${androidSdkPath}/Sdk/platform-tools/adb"
-        def emulator = "${androidSdkPath}/Sdk/emulator/emulator"
+        def adb = "${androidSdkPath}/platform-tools/adb"
+        def emulator = "${androidSdkPath}/emulator/emulator"
 
         //local variables to store exit values
         def maestroResult  //variable to store the maestro test outcome
@@ -72,11 +73,12 @@ abstract class MaestroTestTask extends DefaultTask {
         if (createEmulator) {
             //start the emulator
             println "Starting Emulator"
+
             emulatorProcess = Utils.runCommandsAsync(androidSdkPath, androidEnvironment,
                     ["command": [emulator.toString(), '-avd', device.get()] + emulatorOptions.get().split("\\s+").toList()])[0]
             emulatorOutputThread = new Thread({
                 // Read output of child process and print to parent process's stdout
-                def reader = new BufferedReader(new InputStreamReader(emulatorProcess.inputStream))
+                def reader = new BufferedReader(new InputStreamReader(emulatorProcess.getInputStream()))
                 while (keepRunning) {
                     String line = reader.readLine()
                     if (line == null) {

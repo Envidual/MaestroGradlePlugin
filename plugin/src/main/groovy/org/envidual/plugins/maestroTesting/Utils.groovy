@@ -80,9 +80,6 @@ class Utils{
             if (command.containsKey("output")) {
                 pb.redirectOutput(command["output"])
             }
-            else{
-                pb.redirectOutput(ProcessBuilder.Redirect.INHERIT)
-            }
             if (command.containsKey("input")) {
                 pb.redirectInput(command["input"])
             }
@@ -92,7 +89,6 @@ class Utils{
             if(workingDirectory){
                 pb.directory(new File(workingDirectory));
             }
-            pb.redirectErrorStream(true)
             processes.add(pb.start())
         }
         return processes
