@@ -9,7 +9,7 @@ import org.gradle.api.provider.Property
 abstract class InstallAndroidSdkTask extends DefaultTask {
 
     @Input
-    Property<String> sdkPath
+    abstract Property<String> getSdkPath()
 
     @TaskAction
     void installAndroidSdk() {
