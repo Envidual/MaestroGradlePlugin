@@ -3,17 +3,17 @@ Automating maestro UI tests with gradle
 ## Prerequisites
 - currently only works for MacOS and Linux
 ## Configuring the plugin
-- add ```id "org.envidual.maestroTesting" version "1.2.0"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
+- add ```id "org.envidual.maestroTesting" version "1.2.1"``` to the `plugins{}` section in the build.gradle file in the sub-project where the apk will be located (usually called app)
 - configure the maestro tests:
   - **device**: name of the virtual device to be used for testing (as it is displayed in the device manager). If the device is set to "", the task will not create an emulator itself
   - **apiLevel**: API level for the device (used by installAvd)
   - **testDirectory**: all maestro flow files in this directory will be executed. The path is relative to the sub-project directory.
   - **outputDirectory**: location of the test reports. Also relative to the sub-project directory.
   - **emulatorOptions**: options passed to the emulator. The default value is `'-netdelay none -netspeed full -no-window -noaudio -no-boot-anim'`. Leave out the -no-window option to watch the tests being executed. More information about possible options can be found [here](https://developer.android.com/studio/run/emulator-commandline)
-  - **androidSdkPath**: location of the Android Sdk. If Android Sdk is already installed via android studio or the ANDROID_HOME or ANDROID_SDK_ROOT environment variables are set correctly, this parameter can be left out and the existing Android Sdk will be used. If this option is set, installAndroidSdk will search for an existing installation at the specified location and install it there if none is found.
+  - **androidSdkPath**: location of the Android Sdk. If Android Sdk is already installed via Android Studio or the ANDROID_HOME or ANDROID_SDK_ROOT environment variables are set correctly, this parameter can be left out and the existing Android Sdk will be used. If this option is set, installAndroidSdk will search for an existing installation at the specified location and install it there if none is found.
   - **maestroPath**: location of the maestro executable. If maestro is already installed and included in PATH on your system, this installation will be used and there is no need to specify this option. Note: installMaestro will not use this location and always place maestro in `$HOME/.maestro`
 
-These options can either be set in the build.gradle file as well in a `maestroTestOptions{}` block or be passed to gradle as command line optioins of the form `-P<option_name>`
+These options can either be set in the build.gradle file as well in a `maestroTestOptions{}` block or be passed to gradle as command line optioins of the form `-P<option_name>`. Command line options overwrite those from the build.gradle file, so you can have different options for local tests and in a pipeline.
 
 **Example configuration:**
 
@@ -38,14 +38,6 @@ Command line:
 ```
   ./gradlew --no-daemon installAndroidSdk installMaestro installAvd runMaestroTests -Pdevice="TestDevice" -PtestDirectory="maestro" -PoutputDirectory="maestroResults" -PapiLevel=29 -PemulatorOptions="-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim"
 ```
-
-Note: command line options overwrite the values specified in the build.gradle file. This is especially useful if the configurations for local testing and in a pipeline differ
-
-
-currently, there is only one task available, which will start an emulator and run all maestro flows in the testDirectory:
-```./gradlew runMaestroTests```
-
-Note: this task will also execute ```assemble``` in order to build the project
 
 ## Available Tasks
 #### runMaestroTests

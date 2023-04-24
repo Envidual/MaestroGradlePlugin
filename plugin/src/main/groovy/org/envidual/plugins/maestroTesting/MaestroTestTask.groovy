@@ -1,6 +1,5 @@
 package org.envidual.plugins.maestroTesting
 
-import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -101,6 +100,11 @@ abstract class MaestroTestTask extends DefaultTask {
             Utils.runCommands(project,[:], ["command": [adb, 'shell', 'getprop', 'sys.boot_completed'], "output": bootComplete])
             sleep(1000)
         }
+        //TEST
+        println "Devices:"
+        Utils.runCommands(project,[:],
+                ["command": [adb, 'devices']])
+        sleep(5000) //wait a bit before installing the app because the emulator still isn't ready yet sometimes
         //install the app on the emulator
         println "Installing apk"
         Utils.runCommands(project,[:],
